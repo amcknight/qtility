@@ -2,80 +2,52 @@
 
 module uniform where
 
-open import Relation.Binary.PropositionalEquality
+open import Data.Vec
+open import Data.List hiding ([_])
 open import Data.Nat
-open import Data.Fin hiding (_≤_)
+open import Data.Nat.Properties
+open import Data.Product
+open import stuff using (n≤n; Coin; Heads; Tails)
 
-record Iso (a : Set) (b : Set) : Set where
+data Dist (e : Set) : Set where
+  always : e -> Dist e
+  uniform : {n : ℕ} -> Vec (Dist e) (suc n) -> Dist e
+
+record Odds : Set where
+  constructor odds
   field
-    to : a -> b
-    from : b -> a
-    toFrom : (x : a) -> from (to x) ≡ x
-    fromTo : (x : b) -> to (from x) ≡ x
+    numer : ℕ
+    denom : ℕ
+    denom≠0 : suc zero ≤ denom
+    numer≤denom : numer ≤ denom
 
-≤-step : {m n : ℕ} -> m ≤ n -> m ≤ suc n
-≤-step z≤n = z≤n
-≤-step (s≤s x) = s≤s (≤-step x)
+maxProb100% : Odds
+Odds.numer maxProb100% = 1
+Odds.denom maxProb100% = 1
+Odds.denom≠0 maxProb100% = n≤n
+Odds.numer≤denom maxProb100% = n≤n
 
-n≤n : {n : ℕ} -> n ≤ n
-n≤n {zero} = z≤n
-n≤n {suc n} = s≤s n≤n
+m≤n→m≤n+k : (m n k : ℕ) -> m ≤ n -> m ≤ n + k
+m≤n→m≤n+k zero n k m≤n = z≤n
+m≤n→m≤n+k (suc m) (suc n) k (s≤s m≤n) = s≤s (m≤n→m≤n+k m n k m≤n)
 
-module _ {n : ℕ} {a : Set} (isofin : Iso a (Fin (suc n))) where
-  biggest : Fin (suc n)
-  biggest = fromℕ n
-  foldℕ : {m : ℕ} -> (m ≤ suc n) -> (i : Fin m) -> {y : Set} -> (Fin (suc n) -> y -> y) -> y -> y
-  foldℕ _ zero f acc = f zero acc
-  foldℕ (s≤s proof) (suc i) f acc = f (inject≤ (suc i) (s≤s proof)) (foldℕ (≤-step proof) i f acc)
+splitOdds : Odds -> (n : ℕ) -> (suc zero ≤ n) -> Odds
+Odds.numer (splitOdds (odds numer denom denom≠0 numer≤denom) n n≠0) = numer
+Odds.denom (splitOdds (odds numer denom denom≠0 numer≤denom) n n≠0) = n * denom
+Odds.denom≠0 (splitOdds (odds numer (suc denom) denom≠0 numer≤denom) (suc n) n≠0) = s≤s z≤n
+Odds.numer≤denom (splitOdds (odds numer denom denom≠0 numer≤denom) (suc n) n≠0) = m≤n→m≤n+k numer denom _ numer≤denom
 
+{-# TERMINATING #-}
+probs : {e : Set} -> Odds -> Dist e -> List (e × Odds)
+probs o (always x) = (x , o) ∷ []
+probs o (uniform {n} x) = Data.List.concat ( Data.Vec.toList ( Data.Vec.map (probs o') x ) )
+  where o' = splitOdds o (suc n) (s≤s z≤n)
 
-data Bool : Set where
-  False : Bool
-  True : Bool
+fairCoin : Dist Coin
+fairCoin = uniform ( always Heads ∷ always Tails ∷ [] )
 
-not : Bool -> Bool
-not False = True
-not True = False
+headBiasCoin : Dist Coin
+headBiasCoin = uniform ( always Heads ∷ always Heads ∷ fairCoin ∷ [] )
 
-data Prob : Set where
-  Zero : Prob
-  Top : Prob
-  conj : Prob -> Prob -> Prob
-  disj : Prob -> Prob -> Prob
-
-data LTE : Prob -> Prob -> Set where
-  ZeroLTE : (a : Prob) -> LTE Zero a
-
-data Eq : Prob -> Prob -> Set where
-  refl : {a : Prob} -> Eq a a
-  symm : {a b : Prob} -> Eq a b -> Eq b a
-  tran : {a b c : Prob} -> Eq a b -> Eq b c -> Eq a c
-  conjComm : {a b : Prob} → Eq (conj a b) (conj b a) 
-  disjComm : {a b : Prob} → Eq (disj a b) (disj b a)
-  zeroDisj : {a : Prob} -> Eq (disj Zero a) a
-  topConj : {a : Prob} -> Eq (conj Top a) a
-
-record Gamble {n : ℕ} {a : Set} (isofin : Iso a (Fin (suc n))) (g : a -> Prob) : Set where
-  field
-    everything : Eq Top (foldℕ isofin (s≤s n≤n) (biggest isofin) (λ f p → disj (g (isofin .Iso.from f)) p) Zero)
-
-data Coin : Set where
-  Heads : Coin
-  Tails : Coin
-
-isoCoinFin : Iso Coin (Fin 2)
-Iso.to isoCoinFin Heads = zero
-Iso.to isoCoinFin Tails = suc zero
-Iso.from isoCoinFin zero = Heads
-Iso.from isoCoinFin (suc zero) = Tails
-Iso.toFrom isoCoinFin Heads = refl
-Iso.toFrom isoCoinFin Tails = refl
-Iso.fromTo isoCoinFin zero = refl
-Iso.fromTo isoCoinFin (suc zero) = refl
-
-headCoin : Coin -> Prob
-headCoin Heads = Top
-headCoin Tails = Zero
-
-headCoinIsGamble : Gamble isoCoinFin headCoin
-Gamble.everything headCoinIsGamble = symm (tran zeroDisj (tran disjComm zeroDisj))
+fairCoinProbs : _
+fairCoinProbs = probs maxProb100% headBiasCoin
