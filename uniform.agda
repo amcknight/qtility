@@ -3,10 +3,10 @@
 module uniform where
 
 open import Data.Vec
-open import Data.List hiding ([_])
+open import Data.List hiding ([_]; map)
 open import Data.Nat
 open import Data.Nat.Properties
-open import Data.Product
+open import Data.Product hiding (map)
 open import stuff using (n≤n; Coin; Heads; Tails)
 
 data Dist (e : Set) : Set where
@@ -40,7 +40,7 @@ Odds.numer≤denom (splitOdds (odds numer denom denom≠0 numer≤denom) (suc n)
 {-# TERMINATING #-}
 probs : {e : Set} -> Odds -> Dist e -> List (e × Odds)
 probs o (always x) = (x , o) ∷ []
-probs o (uniform {n} x) = Data.List.concat ( Data.Vec.toList ( Data.Vec.map (probs o') x ) )
+probs o (uniform {n} x) = Data.List.concat ( toList ( map (probs o') x ) )
   where o' = splitOdds o (suc n) (s≤s z≤n)
 
 postulate
