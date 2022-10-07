@@ -43,11 +43,14 @@ probs o (always x) = (x , o) ∷ []
 probs o (uniform {n} x) = Data.List.concat ( Data.Vec.toList ( Data.Vec.map (probs o') x ) )
   where o' = splitOdds o (suc n) (s≤s z≤n)
 
+postulate
+  mergeDist : {e : Set} -> Odds -> Dist e -> Dist e -> Dist e
+
 fairCoin : Dist Coin
 fairCoin = uniform ( always Heads ∷ always Tails ∷ [] )
 
 headBiasCoin : Dist Coin
 headBiasCoin = uniform ( always Heads ∷ always Heads ∷ fairCoin ∷ [] )
 
-fairCoinProbs : _
-fairCoinProbs = probs maxProb100% headBiasCoin
+getProbs : _
+getProbs = probs maxProb100% headBiasCoin
