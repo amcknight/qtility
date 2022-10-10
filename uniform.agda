@@ -44,18 +44,18 @@ probs' o (uniform {n} x) = Data.List.concat ( toList ( map (probs' o') x ) )
 probs : {e : Set} -> Dist e -> List (e × Odds)
 probs = probs' maxOdds
 
-_≡_ : Set -> Set -> Bool
+-- _≡_ : Set -> Set -> Bool
 
-insertWorld : Set × Odds -> List (Set × Odds) -> List (Set × Odds)
-insertWorld (e , o) [] =  (e , o) ∷ []
-insertWorld (e , o) ((me , mo) ∷ mws) = if {!  e ≡ me !} then {!   !} else {!   !}
+-- insertWorld : Set × Odds -> List (Set × Odds) -> List (Set × Odds)
+-- insertWorld (e , o) [] =  (e , o) ∷ []
+-- insertWorld (e , o) ((me , mo) ∷ mws) = if {!  e ≡ me !} then {!   !} else {!   !}
 
-mergeWorlds' : List (Set × Odds) -> List (Set × Odds) -> List (Set × Odds)
-mergeWorlds' [] mws = mws
-mergeWorlds' (w ∷ ws) mws = mergeWorlds' ws (insertWorld w mws)
+-- mergeWorlds' : List (Set × Odds) -> List (Set × Odds) -> List (Set × Odds)
+-- mergeWorlds' [] mws = mws
+-- mergeWorlds' (w ∷ ws) mws = mergeWorlds' ws (insertWorld w mws)
 
-mergeWorlds : List (Set × Odds) -> List (Set × Odds)
-mergeWorlds ws = mergeWorlds' ws []
+-- mergeWorlds : List (Set × Odds) -> List (Set × Odds)
+-- mergeWorlds ws = mergeWorlds' ws []
 
 postulate
   mergeDist : {e : Set} -> Odds -> Dist e -> Dist e -> Dist e
