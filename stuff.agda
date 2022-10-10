@@ -5,6 +5,8 @@ module stuff where
 open import Relation.Binary.PropositionalEquality
 open import Data.Nat
 open import Data.Fin hiding (_≤_)
+open import event
+open import microproofs
 
 record Iso (a : Set) (b : Set) : Set where
   field
@@ -12,14 +14,6 @@ record Iso (a : Set) (b : Set) : Set where
     from : b -> a
     toFrom : (x : a) -> from (to x) ≡ x
     fromTo : (x : b) -> to (from x) ≡ x
-
-≤-step : {m n : ℕ} -> m ≤ n -> m ≤ suc n
-≤-step z≤n = z≤n
-≤-step (s≤s x) = s≤s (≤-step x)
-
-n≤n : {n : ℕ} -> n ≤ n
-n≤n {zero} = z≤n
-n≤n {suc n} = s≤s n≤n
 
 module _ {n : ℕ} {a : Set} (isofin : Iso a (Fin (suc n))) where
   biggest : Fin (suc n)
@@ -58,10 +52,6 @@ data Eq : Prob -> Prob -> Set where
 record Gamble {n : ℕ} {a : Set} (isofin : Iso a (Fin (suc n))) (g : a -> Prob) : Set where
   field
     everything : Eq Top (foldℕ isofin (s≤s n≤n) (biggest isofin) (λ f p → disj (g (isofin .Iso.from f)) p) Zero)
-
-data Coin : Set where
-  Heads : Coin
-  Tails : Coin
 
 isoCoinFin : Iso Coin (Fin 2)
 Iso.to isoCoinFin Heads = zero

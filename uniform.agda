@@ -5,9 +5,11 @@ module uniform where
 open import Data.Vec
 open import Data.List hiding ([_]; map)
 open import Data.Nat
+open import Data.Bool hiding (_≤_)
 open import Data.Nat.Properties
 open import Data.Product hiding (map)
-open import stuff using (n≤n; Coin; Heads; Tails)
+open import microproofs using (n≤n; m≤n→m≤n+k)
+open import event using (Coin; Heads; Tails)
 
 data Dist (e : Set) : Set where
   always : e -> Dist e
@@ -21,15 +23,11 @@ record Odds : Set where
     denom≠0 : suc zero ≤ denom
     numer≤denom : numer ≤ denom
 
-maxProb100% : Odds
-Odds.numer maxProb100% = 1
-Odds.denom maxProb100% = 1
-Odds.denom≠0 maxProb100% = n≤n
-Odds.numer≤denom maxProb100% = n≤n
-
-m≤n→m≤n+k : (m n k : ℕ) -> m ≤ n -> m ≤ n + k
-m≤n→m≤n+k zero n k m≤n = z≤n
-m≤n→m≤n+k (suc m) (suc n) k (s≤s m≤n) = s≤s (m≤n→m≤n+k m n k m≤n)
+maxOdds : Odds
+Odds.numer maxOdds = 1
+Odds.denom maxOdds = 1
+Odds.denom≠0 maxOdds = n≤n
+Odds.numer≤denom maxOdds = n≤n
 
 splitOdds : Odds -> (n : ℕ) -> (suc zero ≤ n) -> Odds
 Odds.numer (splitOdds (odds numer denom denom≠0 numer≤denom) n n≠0) = numer
@@ -38,10 +36,26 @@ Odds.denom≠0 (splitOdds (odds numer (suc denom) denom≠0 numer≤denom) (suc 
 Odds.numer≤denom (splitOdds (odds numer denom denom≠0 numer≤denom) (suc n) n≠0) = m≤n→m≤n+k numer denom _ numer≤denom
 
 {-# TERMINATING #-}
-probs : {e : Set} -> Odds -> Dist e -> List (e × Odds)
-probs o (always x) = (x , o) ∷ []
-probs o (uniform {n} x) = Data.List.concat ( toList ( map (probs o') x ) )
+probs' : {e : Set} -> Odds -> Dist e -> List (e × Odds)
+probs' o (always x) = (x , o) ∷ []
+probs' o (uniform {n} x) = Data.List.concat ( toList ( map (probs' o') x ) )
   where o' = splitOdds o (suc n) (s≤s z≤n)
+
+probs : {e : Set} -> Dist e -> List (e × Odds)
+probs = probs' maxOdds
+
+_≡_ : Set -> Set -> Bool
+
+insertWorld : Set × Odds -> List (Set × Odds) -> List (Set × Odds)
+insertWorld (e , o) [] =  (e , o) ∷ []
+insertWorld (e , o) ((me , mo) ∷ mws) = if {!  e ≡ me !} then {!   !} else {!   !}
+
+mergeWorlds' : List (Set × Odds) -> List (Set × Odds) -> List (Set × Odds)
+mergeWorlds' [] mws = mws
+mergeWorlds' (w ∷ ws) mws = mergeWorlds' ws (insertWorld w mws)
+
+mergeWorlds : List (Set × Odds) -> List (Set × Odds)
+mergeWorlds ws = mergeWorlds' ws []
 
 postulate
   mergeDist : {e : Set} -> Odds -> Dist e -> Dist e -> Dist e
@@ -52,5 +66,5 @@ fairCoin = uniform ( always Heads ∷ always Tails ∷ [] )
 headBiasCoin : Dist Coin
 headBiasCoin = uniform ( always Heads ∷ always Heads ∷ fairCoin ∷ [] )
 
-getProbs : _
-getProbs = probs maxProb100% headBiasCoin
+run = probs headBiasCoin
+ 
