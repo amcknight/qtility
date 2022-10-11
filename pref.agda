@@ -1,4 +1,4 @@
-open import uniform using (Dist; mergeDist; Odds)
+open import uniform using (Dist; bias; Odds)
 
 module pref {e : Set} (_≤_ : Dist e -> Dist e -> Set) where
 
@@ -10,8 +10,8 @@ record VNM : Set where
     refl : (a : Dist e) -> a ≤ a
     comp : (a b : Dist e) -> a ≤ b ⊎ b ≤ a
     trans : (a b c : Dist e) -> a ≤ b -> b ≤ c -> a ≤ c
-    cont : (a b c : Dist e) -> a ≤ b -> b ≤ c -> Σ Odds λ o → let b' = mergeDist o a c in b' ≤ b × b ≤ b'
-    indep : (a b c : Dist e) -> a ≤ b -> (o : Odds) -> mergeDist o a c ≤ mergeDist o b c
+    cont : (a b c : Dist e) -> a ≤ b -> b ≤ c -> Σ Odds λ o → let b' = bias o a c in b' ≤ b × b ≤ b'
+    indep : (a b c : Dist e) -> a ≤ b -> (o : Odds) -> bias o a c ≤ bias o b c
 
 -- module X (vnm : VNM) where 
 --   open VNM vnm
