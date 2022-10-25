@@ -3,10 +3,10 @@ open import Data.Rational
 module utility {e : Set} (utility : e -> ℚ) where
 
 open import uniform
-open import Data.Integer using (+_; -[1+_])
+open import Data.Integer using (+_; -[1+_]; ℤ; 0ℤ)
 open import Data.List
 open import Data.Product
-open import Data.Nat using (suc; s≤s; z≤n)
+open import Data.Nat using (suc; s≤s; z≤n; ℕ)
 open import Data.Rational.Properties
 open import Relation.Binary.PropositionalEquality
 
@@ -25,12 +25,21 @@ open import Data.Sum
 
 postulate
   bias≤ : (d1 d2 d3 : Dist e) -> (o : Odds) -> score d1 ≤ score d2 -> score (bias o d1 d3) ≤ score (bias o d2 d3)
-  
+  ≤→nonneg : {b c : ℚ} -> (b ≤ c) -> (0ℚ ≤ c - b)
+  ⋆-pres-+ : {q r : ℚ} -> (NonNegative q) -> (NonNegative r) -> NonNegative (q * r)
+  /-pres-+ : {q : ℚ} -> (NonNegative q) -> NonNegative (1/ q)
+  +ℤℕ : {i : ℤ} -> (i Data.Integer.≥ 0ℤ) -> ℕ
 
 cont-score : (a b c : Dist e) -> (score a ≤ score b) -> (score b ≤ score c) -> (¬ (score a ≡ score c)) -> Odds
-cont-score a b c sab sbc sa≠sc = let u = ((score c - score b) * 1/ (score c - score a))
-  in odds {!  ↥ u  !} {!   !} {!   !} {!   !}
+cont-score a b c sab sbc sa≠sc = let
+    u = ((score c - score b) * 1/ (score c - score a))
+    x = ≤→nonneg sab
+    y = ≤→nonneg sbc
 
+  in odds {!   !} {!   !} {!   !} {!   !}
+
+cont-score-+ : (q r s : ℚ) -> q ≤ r -> r ≤ s -> ℚ.numerator ((s - r) * 1/ (s - q)) Data.Integer.≥ 0ℤ
+cont-score-+ = {!   !}
 
 -- ↥
 
