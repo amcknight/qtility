@@ -3,11 +3,12 @@ open import Data.Rational
 module utility {e : Set} (utility : e -> ℚ) where
 
 open import uniform
-open import Data.Integer using (+_)
+open import Data.Integer using (+_; -[1+_])
 open import Data.List
 open import Data.Product
-open import Data.Nat using (suc)
+open import Data.Nat using (suc; s≤s; z≤n)
 open import Data.Rational.Properties
+open import Relation.Binary.PropositionalEquality
 
 odds→rat : Odds -> ℚ
 odds→rat (odds numer (suc denom) denom≠0 numer≤denom) = (+ numer) / (suc denom)
@@ -24,7 +25,17 @@ open import Data.Sum
 
 postulate
   bias≤ : (d1 d2 d3 : Dist e) -> (o : Odds) -> score d1 ≤ score d2 -> score (bias o d1 d3) ≤ score (bias o d2 d3)
-  rat→odds : ℚ -> Odds
+  
+
+cont-score : (a b c : Dist e) -> (score a ≤ score b) -> (score b ≤ score c) -> (¬ (score a ≡ score c)) -> Odds
+cont-score a b c sab sbc sa≠sc = let u = ((score c - score b) * 1/ (score c - score a))
+  in odds {!  ↥ u  !} {!   !} {!   !} {!   !}
+
+
+-- ↥
+
+eq→less : (q r : ℚ) -> q ≡ r -> q ≤ r × r ≤ q
+eq→less q .q refl = ≤-refl , ≤-refl
 
 vnm : VNM
 VNM.refl vnm a = prefers a a ≤-refl
@@ -32,7 +43,8 @@ VNM.comp vnm a b with ≤-total (score a) (score b)
 ... | inj₁ x = inj₁ (prefers a b x)
 ... | inj₂ y = inj₂ (prefers b a y)
 VNM.trans vnm a b c (prefers .a .b ab) (prefers .b .c bc) = prefers a c (≤-trans ab bc)
-VNM.cont vnm a b c (prefers .a .b sab) (prefers .b .c sbc) = rat→odds ((score b - score c) * 1/ (score a - score c)) , prefers _ _ {!   !} , {!   !}
+VNM.cont vnm a b c (prefers .a .b sab) (prefers .b .c sbc) = (cont-score a b c sab sbc {!   !}) , prefers _ _ (≤-reflexive {!   !}) , prefers _ _ (≤-reflexive {!   !})
 VNM.indep vnm a b c (prefers .a .b ab) o = prefers (bias o a c) (bias o b c) (bias≤ a b c o ab)
 
--- score b - score c / score a - score c
+_ : ((+ 3 / 10) - (+ 6 / 10)) * 1/ ((+ 2 / 10) - (+ 6 / 10)) ≡  ((+ 6 / 10) - (+ 3 / 10)) * 1/ ((+ 6 / 10) - (+ 2 / 10))
+_ = refl
