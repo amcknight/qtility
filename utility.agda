@@ -27,7 +27,6 @@ postulate
   bias≤ : (d1 d2 d3 : Dist e) -> (o : Odds) -> score d1 ≤ score d2 -> score (bias o d1 d3) ≤ score (bias o d2 d3)
   ⋆-pres-+ : {q r : ℚ} -> (NonNegative q) -> (NonNegative r) -> NonNegative (q * r)
   /-pres-+ : {q : ℚ} -> (NonNegative q) -> NonNegative (1/ q)
-  +ℤℕ : {i : ℤ} -> (i Data.Integer.≥ 0ℤ) -> ℕ
 
 ≤→nonneg : {b c : ℚ} -> (b ≤ c) -> (0ℚ ≤ c - b)
 ≤→nonneg {b} {c} b≤c =
@@ -37,6 +36,9 @@ postulate
     c + - b  ≡⟨⟩
     c - b    ∎
   where open ≤-Reasoning
+
++ℤℕ : (i : ℤ) -> (i Data.Integer.≥ 0ℤ) -> ℕ
++ℤℕ (+_ n) x = n
 
 cont-score : (a b c : Dist e) -> (score a ≤ score b) -> (score b ≤ score c) -> (¬ (score a ≡ score c)) -> Odds
 cont-score a b c sab sbc sa≠sc = let
