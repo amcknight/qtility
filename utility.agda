@@ -24,9 +24,9 @@ open import Relation.Nullary
 open import Data.Sum
 
 postulate
-  bias≤ : (d1 d2 d3 : Dist e) -> (o : Odds) -> score d1 ≤ score d2 -> score (bias o d1 d3) ≤ score (bias o d2 d3)
+  bias≤ : (d1 d2 d3 : Dist e)  → (o : Odds) → score d1 ≤ score d2 → score (bias o d1 d3) ≤ score (bias o d2 d3)
 
-⋆-pres-+ : {q r : ℚ} -> 0ℚ ≤ q -> 0ℚ ≤ r -> 0ℚ ≤ (q * r)
+⋆-pres-+ : {q r : ℚ} → 0ℚ ≤ q → 0ℚ ≤ r → 0ℚ ≤ (q * r)
 ⋆-pres-+ {q} {r} q≥0 r≥0 =
   begin
     0ℚ       ≡⟨⟩
@@ -38,7 +38,7 @@ postulate
 /-pres-+ : (q : ℚ) -> ∀ {n≠0} → Positive q → Positive (1/_ q {n≠0})
 /-pres-+ q = pos⇒1/pos q
 
-≤→nonneg : {b c : ℚ} -> (b ≤ c) -> (0ℚ ≤ c - b)
+≤→nonneg : {b c : ℚ} → (b ≤ c) → (0ℚ ≤ c - b)
 ≤→nonneg {b} {c} b≤c =
   begin
     0ℚ       ≡⟨ sym (+-inverseʳ c) ⟩
