@@ -25,10 +25,19 @@ open import Data.Sum
 
 postulate
   bias≤ : (d1 d2 d3 : Dist e) -> (o : Odds) -> score d1 ≤ score d2 -> score (bias o d1 d3) ≤ score (bias o d2 d3)
-  ≤→nonneg : {b c : ℚ} -> (b ≤ c) -> (0ℚ ≤ c - b)
   ⋆-pres-+ : {q r : ℚ} -> (NonNegative q) -> (NonNegative r) -> NonNegative (q * r)
   /-pres-+ : {q : ℚ} -> (NonNegative q) -> NonNegative (1/ q)
   +ℤℕ : {i : ℤ} -> (i Data.Integer.≥ 0ℤ) -> ℕ
+
+≤→nonneg : {b c : ℚ} -> (b ≤ c) -> (0ℚ ≤ c - b)
+≤→nonneg {b} {c} b≤c =
+  begin
+    0ℚ       ≡⟨ sym (+-inverseʳ c) ⟩
+    c + - c  ≡⟨⟩
+    c - c    ≤⟨ +-monoʳ-≤ c (neg-antimono-≤ b≤c) ⟩
+    c + - b  ≡⟨⟩
+    c - b    ∎
+  where open ≤-Reasoning
 
 cont-score : (a b c : Dist e) -> (score a ≤ score b) -> (score b ≤ score c) -> (¬ (score a ≡ score c)) -> Odds
 cont-score a b c sab sbc sa≠sc = let
