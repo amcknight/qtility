@@ -16,8 +16,10 @@ odds→rat (odds numer (suc denom) denom≠0 numer≤denom) = (+ numer) / (suc d
 score : Dist e -> ℚ
 score x = foldr (λ {(e , o) s → s + odds→rat o * utility e}) 0ℚ (probs x)
 
-data _⊑_ : Dist e -> Dist e -> Set where
-  prefers : (d1 : Dist e) -> (d2 : Dist e) -> score d1 ≤ score d2 -> d1 ⊑ d2
+record _⊑_ (d1 d2 : Dist e) : Set where
+  constructor prefers
+  field
+    better-score : score d1 ≤ score d2
 
 open import pref _⊑_
 open import Relation.Nullary
@@ -67,13 +69,13 @@ eq→less : (q r : ℚ) -> q ≡ r -> q ≤ r × r ≤ q
 eq→less q .q refl = ≤-refl , ≤-refl
 
 vnm : VNM
-VNM.refl vnm a = prefers a a ≤-refl
+VNM.refl vnm a = prefers ≤-refl
 VNM.comp vnm a b with ≤-total (score a) (score b)
-... | inj₁ x = inj₁ (prefers a b x)
-... | inj₂ y = inj₂ (prefers b a y)
-VNM.trans vnm a b c (prefers .a .b ab) (prefers .b .c bc) = prefers a c (≤-trans ab bc)
-VNM.cont vnm a b c (prefers .a .b sab) (prefers .b .c sbc) = (cont-score a b c sab sbc {!   !}) , prefers _ _ (≤-reflexive {!   !}) , prefers _ _ (≤-reflexive {!   !})
-VNM.indep vnm a b c (prefers .a .b ab) o = prefers (bias o a c) (bias o b c) (bias≤ a b c o ab)
+... | inj₁ x = inj₁ (prefers x)
+... | inj₂ y = inj₂ (prefers y)
+VNM.trans vnm a b c (prefers ab) (prefers bc) = prefers (≤-trans ab bc)
+VNM.cont vnm a b c (prefers sab) (prefers sbc) = (cont-score a b c sab sbc {!   !}) , prefers (≤-reflexive {!   !}) , prefers (≤-reflexive {!   !})
+VNM.indep vnm a b c (prefers ab) o = prefers (bias≤ a b c o ab)
 
 _ : ((+ 3 / 10) - (+ 6 / 10)) * 1/ ((+ 2 / 10) - (+ 6 / 10)) ≡  ((+ 6 / 10) - (+ 3 / 10)) * 1/ ((+ 6 / 10) - (+ 2 / 10))
 _ = refl
