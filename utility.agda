@@ -33,8 +33,7 @@ postulate
 ≤→nonneg {b} {c} b≤c =
   begin
     0ℚ       ≡⟨ sym (+-inverseʳ c) ⟩
-    c + - c  ≡⟨⟩
-    c - c    ≤⟨ +-monoʳ-≤ c (neg-antimono-≤ b≤c) ⟩
+    c + - c  ≤⟨ +-monoʳ-≤ c (neg-antimono-≤ b≤c) ⟩
     c + - b  ≡⟨⟩
     c - b    ∎
   where open ≤-Reasoning
