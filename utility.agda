@@ -5,7 +5,7 @@ module utility {e : Set} (utility : e -> ℚ) where
 open import uniform
 open import Data.Integer using (+_; -[1+_]; ℤ; 0ℤ)
 open import Data.List
-open import Data.Product
+open import Data.Product hiding (map)
 open import Data.Nat using (suc; s≤s; z≤n; ℕ)
 open import Data.Rational.Properties
 open import Relation.Binary.PropositionalEquality
@@ -13,8 +13,29 @@ open import Relation.Binary.PropositionalEquality
 odds→rat : Odds -> ℚ
 odds→rat (odds numer (suc denom) denom≠0 numer≤denom) = (+ numer) / (suc denom)
 
+sumℚ : List ℚ → ℚ
+sumℚ = foldr _+_ 0ℚ
+
+expected : e × Odds → ℚ
+expected (e , o) = odds→rat o * utility e
+
 score : Dist e -> ℚ
-score x = foldr (λ {(e , o) s → s + odds→rat o * utility e}) 0ℚ (probs x)
+score x = sumℚ (map expected (probs x))
+
+score-always : (ev : e) → score (always ev) ≡ utility ev
+score-always ev =
+  begin
+    score (always ev)                                 ≡⟨⟩
+    sumℚ (map expected (probs (always ev)))           ≡⟨⟩
+    sumℚ (map expected (probs' maxOdds (always ev)))  ≡⟨⟩
+    sumℚ (map expected ((ev , maxOdds) ∷ []))         ≡⟨⟩
+    sumℚ (expected (ev , maxOdds) ∷ [])               ≡⟨⟩
+    sumℚ ((odds→rat maxOdds * utility ev) ∷ [])       ≡⟨⟩
+    (odds→rat maxOdds * utility ev) + 0ℚ              ≡⟨ +-identityʳ (odds→rat maxOdds * utility ev) ⟩
+    (odds→rat maxOdds * utility ev)                   ≡⟨⟩
+    1ℚ * utility ev                                   ≡⟨ *-identityˡ (utility ev) ⟩
+    utility ev                                        ∎
+  where open ≡-Reasoning
 
 record _⊑_ (d1 d2 : Dist e) : Set where
   constructor prefers
