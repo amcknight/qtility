@@ -24,11 +24,31 @@ open import Relation.Nullary
 open import Data.Sum
 
 postulate
-  bias≤ : (d1 d2 d3 : Dist e) -> (o : Odds) -> score d1 ≤ score d2 -> score (bias o d1 d3) ≤ score (bias o d2 d3)
-  ≤→nonneg : {b c : ℚ} -> (b ≤ c) -> (0ℚ ≤ c - b)
-  ⋆-pres-+ : {q r : ℚ} -> (NonNegative q) -> (NonNegative r) -> NonNegative (q * r)
-  /-pres-+ : {q : ℚ} -> (NonNegative q) -> NonNegative (1/ q)
-  +ℤℕ : {i : ℤ} -> (i Data.Integer.≥ 0ℤ) -> ℕ
+  bias≤ : (d1 d2 d3 : Dist e)  → (o : Odds) → score d1 ≤ score d2 → score (bias o d1 d3) ≤ score (bias o d2 d3)
+
+⋆-pres-+ : {q r : ℚ} → 0ℚ ≤ q → 0ℚ ≤ r → 0ℚ ≤ (q * r)
+⋆-pres-+ {q} {r} q≥0 r≥0 =
+  begin
+    0ℚ       ≡⟨⟩
+    0ℚ * 0ℚ  ≤⟨ *-monoʳ-≤-nonNeg 0ℚ _ q≥0 ⟩
+    q * 0ℚ   ≤⟨ *-monoˡ-≤-nonNeg q (nonNegative q≥0) r≥0 ⟩
+    q * r    ∎
+  where open ≤-Reasoning
+
+/-pres-+ : (q : ℚ) -> ∀ {n≠0} → Positive q → Positive (1/_ q {n≠0})
+/-pres-+ q = pos⇒1/pos q
+
+≤→nonneg : {b c : ℚ} → (b ≤ c) → (0ℚ ≤ c - b)
+≤→nonneg {b} {c} b≤c =
+  begin
+    0ℚ       ≡⟨ sym (+-inverseʳ c) ⟩
+    c + - c  ≤⟨ +-monoʳ-≤ c (neg-antimono-≤ b≤c) ⟩
+    c + - b  ≡⟨⟩
+    c - b    ∎
+  where open ≤-Reasoning
+
++ℤℕ : (i : ℤ) -> (i Data.Integer.≥ 0ℤ) -> ℕ
++ℤℕ (+_ n) x = n
 
 cont-score : (a b c : Dist e) -> (score a ≤ score b) -> (score b ≤ score c) -> (¬ (score a ≡ score c)) -> Odds
 cont-score a b c sab sbc sa≠sc = let
