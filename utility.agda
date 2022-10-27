@@ -11,9 +11,18 @@ open import Data.Product hiding (map)
 open import Data.Nat using (suc; s≤s; z≤n; ℕ)
 open import Data.Rational.Properties
 open import Relation.Binary.PropositionalEquality
+open import Data.Rational.Unnormalised.Base using (_≢0)
+
+postulate
+  todo : {A : Set} → A
+
+open import Data.Unit using (tt)
+
+build-≢0 : (n : ℕ) → (0 Data.Nat.< n) → n ≢0
+build-≢0 .(suc _) (s≤s x) = tt
 
 odds→rat : Odds -> ℚ
-odds→rat (odds numer (suc denom) denom≠0 numer≤denom) = (+ numer) / (suc denom)
+odds→rat (odds numer denom denom≠0 numer≤denom) = _/_ (+ numer) denom { build-≢0 denom denom≠0 }
 
 sumℚ : List ℚ → ℚ
 sumℚ = foldr _+_ 0ℚ
@@ -45,7 +54,7 @@ sumℚ-homo (x ∷ a) b =
   begin
     sumℚ (x ∷ a ++ b)      ≡⟨⟩
     x + sumℚ (a ++ b)      ≡⟨ cong (_+_ x) (sumℚ-homo a b) ⟩
-    x + (sumℚ a + sumℚ b)  ≡⟨ sym (+-assoc x _ _) ⟩
+    x + (sumℚ a + sumℚ b)  ≡⟨ sym (+-assoc x (sumℚ a) (sumℚ b)) ⟩
     (x + sumℚ a) + sumℚ b  ≡⟨⟩
     sumℚ (x ∷ a) + sumℚ b  ∎
   where open ≡-Reasoning
