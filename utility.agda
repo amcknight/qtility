@@ -40,7 +40,15 @@ score-always ev =
   where open ≡-Reasoning
 
 sumℚ-homo : (a b : List ℚ) → sumℚ (a ++ b) ≡ sumℚ a + sumℚ b
-sumℚ-homo = ?
+sumℚ-homo [] b = sym (+-identityˡ (sumℚ b))
+sumℚ-homo (x ∷ a) b =
+  begin
+    sumℚ (x ∷ a ++ b)      ≡⟨⟩
+    x + sumℚ (a ++ b)      ≡⟨ cong (_+_ x) (sumℚ-homo a b) ⟩
+    x + (sumℚ a + sumℚ b)  ≡⟨ sym (+-assoc x _ _) ⟩
+    (x + sumℚ a) + sumℚ b  ≡⟨⟩
+    sumℚ (x ∷ a) + sumℚ b  ∎
+  where open ≡-Reasoning
 
 ⊗-homo : ∀ a b → odds→rat (a ⊗ b) ≡ odds→rat a * odds→rat b
 ⊗-homo a b = {! !}
