@@ -2,9 +2,11 @@ open import Data.Rational
 
 module utility {e : Set} (utility : e -> ℚ) where
 
+open import Function using (_∘_)
 open import uniform
 open import Data.Integer using (+_; -[1+_]; ℤ; 0ℤ)
 open import Data.List
+open import Data.List.Properties
 open import Data.Product hiding (map)
 open import Data.Nat using (suc; s≤s; z≤n; ℕ)
 open import Data.Rational.Properties
@@ -37,6 +39,62 @@ score-always ev =
     utility ev                                        ∎
   where open ≡-Reasoning
 
+sumℚ-homo : (a b : List ℚ) → sumℚ (a ++ b) ≡ sumℚ a + sumℚ b
+sumℚ-homo = ?
+
+⊗-homo : ∀ a b → odds→rat (a ⊗ b) ≡ odds→rat a * odds→rat b
+⊗-homo a b = {! !}
+
+sumℚ-factor : {A : Set} (k : ℚ) (x : List ℚ) → sumℚ (map (k *_) x) ≡ k * sumℚ x
+sumℚ-factor k [] = sym (*-zeroʳ k)
+sumℚ-factor {A} k (x ∷ xs) =
+  begin
+    sumℚ (map (k *_) (x ∷ xs))    ≡⟨⟩
+    k * x + sumℚ (map (k *_) xs)  ≡⟨ cong (\ φ → k * x + φ) (sumℚ-factor {A} k xs) ⟩
+    k * x + (k * sumℚ xs)         ≡⟨ sym (*-distribˡ-+ k x (sumℚ xs)) ⟩
+    k * (x + sumℚ xs)             ≡⟨⟩
+    k * sumℚ (x ∷ xs)
+  ∎
+  where open ≡-Reasoning
+
+score-bias : (d1 d2 : Dist e) → (o : Odds) → score (bias o d1 d2) ≡ odds→rat o * score d1 + (1ℚ - odds→rat o) * score d2
+score-bias d1 d2 o =
+  begin
+    score (bias o d1 d2)
+  ≡⟨⟩
+    sumℚ (map expected (probs (bias o d1 d2)))
+  ≡⟨⟩
+    sumℚ (map expected (probs' maxOdds (bias o d1 d2)))
+  ≡⟨⟩
+    let lhsp = probs' maxOdds d1
+        lhs = Data.List.map (map₂ (_⊗_ o)) lhsp
+        rhsp = probs' maxOdds d2
+        rhs = Data.List.map (map₂ (_⊗_ (complement o))) rhsp
+     in
+    sumℚ (map expected (lhs ++ rhs))
+  ≡⟨ cong sumℚ (map-++-commute expected lhs rhs) ⟩
+    sumℚ (map expected lhs ++ map expected rhs)
+  ≡⟨ cong sumℚ (cong₂ _++_ (sym (map-compose lhsp)) (sym (map-compose rhsp))) ⟩
+    sumℚ (map (expected ∘ map₂ (_⊗_ o)) lhsp
+       ++ map (expected ∘ map₂ (_⊗_ (complement o))) rhsp)
+  ≡⟨ sumℚ-homo (map (expected ∘ map₂ (_⊗_ o)) lhsp) _ ⟩
+    let rhs_now = sumℚ (map (expected ∘ map₂ (_⊗_ (complement o))) rhsp)
+     in
+    sumℚ (map (expected ∘ map₂ (_⊗_ o)) lhsp)
+      + rhs_now
+  ≡⟨⟩
+    sumℚ (map (λ { (e , x) → odds→rat (o ⊗ x) * utility e }) lhsp)
+      + rhs_now
+  ≡⟨ ? ⟩
+    sumℚ (map (λ { (e , x) → (odds→rat o * odds→rat x) * utility e }) lhsp)
+      + rhs_now
+  ≡⟨ ? ⟩
+    o' * score d1 + (1ℚ - o') * score d2
+  ∎
+  where
+    o' = odds→rat o
+    open ≡-Reasoning
+
 record _⊑_ (d1 d2 : Dist e) : Set where
   constructor prefers
   field
@@ -46,8 +104,14 @@ open import pref _⊑_
 open import Relation.Nullary
 open import Data.Sum
 
-postulate
-  bias≤ : (d1 d2 d3 : Dist e)  → (o : Odds) → score d1 ≤ score d2 → score (bias o d1 d3) ≤ score (bias o d2 d3)
+bias≤ : (d1 d2 d3 : Dist e)  → (o : Odds) → score d1 ≤ score d2 → score (bias o d1 d3) ≤ score (bias o d2 d3)
+bias≤ d1 d2 d3 o d1≤d2 =
+  begin
+    ?
+  ≤⟨ ? ⟩
+    ?
+  ∎
+  where open ≤-Reasoning
 
 ⋆-pres-+ : {q r : ℚ} → 0ℚ ≤ q → 0ℚ ≤ r → 0ℚ ≤ (q * r)
 ⋆-pres-+ {q} {r} q≥0 r≥0 =
