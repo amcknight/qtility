@@ -8,6 +8,7 @@ open import Data.Integer using (+_; -[1+_]; ℤ; 0ℤ)
 open import Data.List
 open import Data.List.Properties
 open import Data.Product hiding (map)
+import Data.Nat.Properties
 open import Data.Nat using (suc; s≤s; z≤n; ℕ)
 open import Data.Rational.Properties
 open import Relation.Binary.PropositionalEquality
@@ -59,8 +60,27 @@ sumℚ-homo (x ∷ a) b =
     sumℚ (x ∷ a) + sumℚ b  ∎
   where open ≡-Reasoning
 
+*-/-distrib
+  : ∀ n1 n2 d1 d2
+  → (d1ne : d1 Data.Nat.> 0) (d2ne : d2 Data.Nat.> 0)
+  → (_/_ (+ (n1 Data.Nat.* n2)) (d1 Data.Nat.* d2) {build-≢0 (d1 Data.Nat.* d2) ( Data.Nat.Properties.*-mono-≤ d1ne d2ne )})
+  ≡ (_/_ (+ n1) d1 {build-≢0 d1 d1ne}) * (_/_ (+ n2) d2 {build-≢0 d2 d2ne})
+*-/-distrib n1 n2 d1 d2 d1ne d2ne =
+  begin
+    normalize (n1 Data.Nat.* n2) (d1 Data.Nat.* d2)
+  ≡⟨ todo ⟩
+    normalize n1 d1 * normalize n2 d2
+  ∎
+  where open ≡-Reasoning
+
 ⊗-homo : ∀ a b → odds→rat (a ⊗ b) ≡ odds→rat a * odds→rat b
-⊗-homo a b = {! !}
+⊗-homo a@(odds an ad (s≤s ax) ay) b@(odds bn bd (s≤s bx) by) =
+  begin
+    odds→rat (a ⊗ b)                             ≡⟨⟩
+    (+ (an Data.Nat.* bn)) / (ad Data.Nat.* bd)  ≡⟨ *-/-distrib an bn ad bd (s≤s z≤n) (s≤s z≤n) ⟩
+    (+ an / ad) * (+ bn / bd)                    ≡⟨⟩
+    odds→rat a * odds→rat b                      ∎
+  where open ≡-Reasoning
 
 sumℚ-factor : {A : Set} (k : ℚ) (x : List ℚ) → sumℚ (map (k *_) x) ≡ k * sumℚ x
 sumℚ-factor k [] = sym (*-zeroʳ k)
