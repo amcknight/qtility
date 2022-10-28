@@ -4,6 +4,8 @@ module utility {e : Set} (utility : e -> ℚ) where
 
 open import Function using (_∘_)
 open import uniform
+open import utility.score utility
+open import utils
 open import Data.Integer using (+_; -[1+_]; ℤ; 0ℤ)
 open import Data.List
 open import Data.List.Properties
@@ -14,25 +16,7 @@ open import Data.Rational.Properties
 open import Relation.Binary.PropositionalEquality
 open import Data.Rational.Unnormalised.Base using (_≢0)
 
-postulate
-  todo : {A : Set} → A
-
 open import Data.Unit using (tt)
-
-build-≢0 : (n : ℕ) → (0 Data.Nat.< n) → n ≢0
-build-≢0 .(suc _) (s≤s x) = tt
-
-odds→rat : Odds -> ℚ
-odds→rat (odds numer denom denom≠0 numer≤denom) = _/_ (+ numer) denom { build-≢0 denom denom≠0 }
-
-sumℚ : List ℚ → ℚ
-sumℚ = foldr _+_ 0ℚ
-
-expected : e × Odds → ℚ
-expected (e , o) = odds→rat o * utility e
-
-score : Dist e -> ℚ
-score x = sumℚ (map expected (probs x))
 
 score-always : (ev : e) → score (always ev) ≡ utility ev
 score-always ev =
@@ -47,51 +31,6 @@ score-always ev =
     (odds→rat maxOdds * utility ev)                   ≡⟨⟩
     1ℚ * utility ev                                   ≡⟨ *-identityˡ (utility ev) ⟩
     utility ev                                        ∎
-  where open ≡-Reasoning
-
-sumℚ-homo : (a b : List ℚ) → sumℚ (a ++ b) ≡ sumℚ a + sumℚ b
-sumℚ-homo [] b = sym (+-identityˡ (sumℚ b))
-sumℚ-homo (x ∷ a) b =
-  begin
-    sumℚ (x ∷ a ++ b)      ≡⟨⟩
-    x + sumℚ (a ++ b)      ≡⟨ cong (_+_ x) (sumℚ-homo a b) ⟩
-    x + (sumℚ a + sumℚ b)  ≡⟨ sym (+-assoc x (sumℚ a) (sumℚ b)) ⟩
-    (x + sumℚ a) + sumℚ b  ≡⟨⟩
-    sumℚ (x ∷ a) + sumℚ b  ∎
-  where open ≡-Reasoning
-
-*-/-distrib
-  : ∀ n1 n2 d1 d2
-  → (d1ne : d1 Data.Nat.> 0) (d2ne : d2 Data.Nat.> 0)
-  → (_/_ (+ (n1 Data.Nat.* n2)) (d1 Data.Nat.* d2) {build-≢0 (d1 Data.Nat.* d2) ( Data.Nat.Properties.*-mono-≤ d1ne d2ne )})
-  ≡ (_/_ (+ n1) d1 {build-≢0 d1 d1ne}) * (_/_ (+ n2) d2 {build-≢0 d2 d2ne})
-*-/-distrib n1 n2 d1 d2 d1ne d2ne =
-  begin
-    normalize (n1 Data.Nat.* n2) (d1 Data.Nat.* d2)
-  ≡⟨ todo ⟩
-    normalize n1 d1 * normalize n2 d2
-  ∎
-  where open ≡-Reasoning
-
-⊗-homo : ∀ a b → odds→rat (a ⊗ b) ≡ odds→rat a * odds→rat b
-⊗-homo a@(odds an ad (s≤s ax) ay) b@(odds bn bd (s≤s bx) by) =
-  begin
-    odds→rat (a ⊗ b)                             ≡⟨⟩
-    (+ (an Data.Nat.* bn)) / (ad Data.Nat.* bd)  ≡⟨ *-/-distrib an bn ad bd (s≤s z≤n) (s≤s z≤n) ⟩
-    (+ an / ad) * (+ bn / bd)                    ≡⟨⟩
-    odds→rat a * odds→rat b                      ∎
-  where open ≡-Reasoning
-
-sumℚ-factor : {A : Set} (k : ℚ) (x : List ℚ) → sumℚ (map (k *_) x) ≡ k * sumℚ x
-sumℚ-factor k [] = sym (*-zeroʳ k)
-sumℚ-factor {A} k (x ∷ xs) =
-  begin
-    sumℚ (map (k *_) (x ∷ xs))    ≡⟨⟩
-    k * x + sumℚ (map (k *_) xs)  ≡⟨ cong (\ φ → k * x + φ) (sumℚ-factor {A} k xs) ⟩
-    k * x + (k * sumℚ xs)         ≡⟨ sym (*-distribˡ-+ k x (sumℚ xs)) ⟩
-    k * (x + sumℚ xs)             ≡⟨⟩
-    k * sumℚ (x ∷ xs)
-  ∎
   where open ≡-Reasoning
 
 score-bias : (d1 d2 : Dist e) → (o : Odds) → score (bias o d1 d2) ≡ odds→rat o * score d1 + (1ℚ - odds→rat o) * score d2
@@ -122,10 +61,10 @@ score-bias d1 d2 o =
   ≡⟨⟩
     sumℚ (map (λ { (e , x) → odds→rat (o ⊗ x) * utility e }) lhsp)
       + rhs_now
-  ≡⟨ ? ⟩
-    sumℚ (map (λ { (e , x) → (odds→rat o * odds→rat x) * utility e }) lhsp)
-      + rhs_now
-  ≡⟨ ? ⟩
+ -- ≡⟨ ? ⟩
+  --   sumℚ (map (λ { (e , x) → (odds→rat o * odds→rat x) * utility e }) lhsp)
+  --     + rhs_now
+  ≡⟨ todo ⟩
     o' * score d1 + (1ℚ - o') * score d2
   ∎
   where
@@ -180,7 +119,7 @@ cont-score a b c sab sbc sa≠sc = let
     x = ≤→nonneg sab
     y = ≤→nonneg sbc
 
-  in odds {!   !} {!   !} {!   !} {!   !}
+  in {! !} -- odds {!   !} {!   !} {!   !} {!   !}
 
 cont-score-+ : (q r s : ℚ) -> q ≤ r -> r ≤ s -> ℚ.numerator ((s - r) * 1/ (s - q)) Data.Integer.≥ 0ℤ
 cont-score-+ = {!   !}
@@ -197,7 +136,7 @@ VNM.comp vnm a b with ≤-total (score a) (score b)
 ... | inj₂ y = inj₂ (prefers y)
 VNM.trans vnm a b c (prefers ab) (prefers bc) = prefers (≤-trans ab bc)
 VNM.cont vnm a b c (prefers sab) (prefers sbc) = (cont-score a b c sab sbc {!   !}) , prefers (≤-reflexive {!   !}) , prefers (≤-reflexive {!   !})
-VNM.indep vnm a b c (prefers ab) o = prefers (bias≤ a b c o ab)
+VNM.indep vnm a b c (prefers ab) o = prefers {! !} -- (bias≤ a b c o ab)
 
 _ : ((+ 3 / 10) - (+ 6 / 10)) * 1/ ((+ 2 / 10) - (+ 6 / 10)) ≡  ((+ 6 / 10) - (+ 3 / 10)) * 1/ ((+ 6 / 10) - (+ 2 / 10))
 _ = refl
