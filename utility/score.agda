@@ -15,12 +15,12 @@ open import Data.Rational.Properties
 open import Relation.Binary.PropositionalEquality
 open import Data.Rational.Unnormalised.Base using (_≢0)
 open import Data.Unit using (tt)
+import Data.Nat as ℕ
+import Data.Integer as ℤ
+open import Data.Rational.Unnormalised.Base as ℚᵘ using (ℚᵘ; mkℚᵘ; _≢0)
 
 postulate
   todo : {A : Set} → A
-
-build-≢0 : (n : ℕ) → (0 Data.Nat.< n) → n ≢0
-build-≢0 .(suc _) (s≤s x) = tt
 
 odds→rat : Odds -> ℚ
 odds→rat (odds numer denom denom≠0 numer≤denom) = _/_ (+ numer) denom { build-≢0 denom denom≠0 }
@@ -30,6 +30,16 @@ expected (e , o) = odds→rat o * utility e
 
 score : Dist e -> ℚ
 score x = sumℚ (map expected (probs x))
+
+/-distrib-*
+  : ∀ p q
+  → (↥ p ℤ.* ↥ q) / (↧ₙ p ℕ.* ↧ₙ q) ≡ (↥ p / ↧ₙ p) * ( ↥ q / ↧ₙ q)
+/-distrib-* p q =
+  begin
+    (↥ p ℤ.* ↥ q) / (↧ₙ p ℕ.* ↧ₙ q)  ≡⟨⟩
+    p * q                            ≡⟨ sym (cong₂ _*_ (↥p/↧p≡p p) (↥p/↧p≡p q)) ⟩
+    (↥ p / ↧ₙ p) * ( ↥ q / ↧ₙ q)     ∎
+  where open ≡-Reasoning
 
 *-/-distrib
   : ∀ n1 n2 d1 d2
@@ -48,7 +58,7 @@ score x = sumℚ (map expected (probs x))
 ⊗-homo a@(odds an ad (s≤s ax) ay) b@(odds bn bd (s≤s bx) by) =
   begin
     odds→rat (a ⊗ b)                             ≡⟨⟩
-    (+ (an Data.Nat.* bn)) / (ad Data.Nat.* bd)  ≡⟨ *-/-distrib an bn ad bd (s≤s z≤n) (s≤s z≤n) ⟩
+    (+ (an Data.Nat.* bn)) / (ad Data.Nat.* bd)  ≡⟨ {! /-distrib-* (+ an / ad) (+ bn / bd) !} ⟩
     (+ an / ad) * (+ bn / bd)                    ≡⟨⟩
     odds→rat a * odds→rat b                      ∎
   where open ≡-Reasoning
