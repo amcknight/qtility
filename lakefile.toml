@@ -1,0 +1,20 @@
+name = "Qtility"
+version = "0.1.0"
+keywords = ["math"]
+defaultTargets = ["Qtility"]
+
+[leanOptions]
+pp.unicode.fun = true # pretty-prints `fun a ↦ b`
+relaxedAutoImplicit = false
+# weak.linter.mathlibStandardSet = true   # off — Mathlib's upstream-style linters
+                                          # expect Copyright/Authors headers etc.
+                                          # Re-enable if/when contributing upstream.
+maxSynthPendingDepth = 3
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.30.0"
+
+[[lean_lib]]
+name = "Qtility"

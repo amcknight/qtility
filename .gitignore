@@ -1,1 +1,5 @@
 *.agdai
+/.lake
+
+# Reference PDFs are kept locally only (too large for git); see papers/README.md
+/papers/*.pdf
